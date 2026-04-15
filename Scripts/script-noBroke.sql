@@ -1,4 +1,4 @@
-CREATE DATABASE noBroke;
+Create DATABASE noBroke;
 USE noBroke;
 
 CREATE TABLE empresa (
@@ -63,8 +63,10 @@ CREATE TABLE tipo_componente (
     fk_servidor INT NOT NULL,
     fk_formato INT NOT NULL,
     nome_componente VARCHAR(45) NOT NULL,
-    valor_max DECIMAL(10,2) NOT NULL,
-    valor_min DECIMAL(10,2) NOT NULL,
+    valor_max_critico DECIMAL(10,2) NOT NULL,
+    valor_min_critico DECIMAL(10,2) NOT NULL,
+    valor_max_atencao DECIMAL(10,2) NOT NULL,
+    valor_min_atencao DECIMAL(10,2) NOT NULL,
     
     PRIMARY KEY (id_tipo, fk_componente, fk_servidor, fk_formato),
     
@@ -75,17 +77,14 @@ CREATE TABLE tipo_componente (
 
 CREATE TABLE alerta (
     id_alerta INT PRIMARY KEY AUTO_INCREMENT,
-    fk_servidor INT NOT NULL,
     fk_tipo INT NOT NULL,
-    fk_componente INT NOT NULL,
-    fk_formato INT NOT NULL,                 
+    fk_componente INT NOT NULL,                
     descricao VARCHAR(225) NOT NULL,
     valor_capturado DECIMAL(5,2),
     data_alerta DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     
-    FOREIGN KEY (fk_servidor) REFERENCES servidor(id_servidor),
-    FOREIGN KEY (fk_tipo, fk_componente, fk_servidor, fk_formato) 
-        REFERENCES tipo_componente(id_tipo, fk_componente, fk_servidor, fk_formato)
+    FOREIGN KEY (fk_tipo, fk_componente) 
+        REFERENCES tipo_componente(id_tipo, fk_componente)
 );
 
 
@@ -131,16 +130,15 @@ INSERT INTO servidor (nome, sistema_operacional, fk_empresa) VALUES
 ('SRV-Argos-DB', 'Debian 11', 1),
 ('SRV-DTIC-PROD', 'Windows Server 2022', 2);
 
+INSERT INTO servidor (nome, sistema_operacional, fk_empresa) VALUES 
+('luiz', 'Ubuntu 22.04 LTS', 2);
 
-INSERT INTO tipo_componente (id_tipo, fk_componente, fk_servidor, fk_formato, nome_componente, valor_max, valor_min) VALUES 
-(1, 1, 1, 2, 'CPU Principal', 3.00, 0.50),  
-(1, 2, 1, 3, 'Memória RAM', 28.00, 2.00),    
-(2, 3, 2, 3, 'Armazenamento DB', 900.00, 50.00), 
-(3, 1, 3, 1, 'Carga de Trabalho', 85.00, 1.00);  
+INSERT INTO tipo_componente (id_tipo, fk_componente, fk_servidor, fk_formato, nome_componente, valor_max_critico, valor_min_critico, valor_max_atencao, valor_min_atencao) VALUES 
+(1, 1, 4, 1, 'Uso de CPU', 90.00, 0.00, 75.00, 0.00),
+(2, 2, 4, 1, 'Uso de RAM', 95.00, 0.00, 80.00, 0.00),
+(3, 3, 4, 3, 'Espaço em Disco', 900.00, 10.00, 800.00, 50.00);
 
-
-INSERT INTO alerta (fk_servidor, fk_tipo, fk_componente, fk_formato, descricao, valor_capturado) VALUES 
-(1, 1, 1, 2, 'Uso de CPU acima do limite operacional durante o pregão', 3.15),
-(1, 1, 2, 3, 'Memória RAM atingindo nível crítico de paginação', 29.50),
-(2, 2, 3, 3, 'Espaço em disco insuficiente para logs do Home Broker', 950.00);
-
+INSERT INTO alerta (fk_tipo, fk_componente, descricao, valor_capturado) VALUES 
+(1, 1, 'Uso de CPU acima do limite de atenção no servidor', 78.50),
+(2, 2, 'Uso de RAM atingiu nível crítico no servidor', 96.20),
+(1, 1, 'Pico de processamento detectado', 85.00);
