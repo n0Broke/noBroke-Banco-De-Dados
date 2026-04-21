@@ -1,51 +1,179 @@
-CREATE DATABASE noBroke;
+CREATE	 DATABASE noBroke;
 USE noBroke;
 
-CREATE TABLE empresa(
-	id_empresa INT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE empresa (
+    id_empresa INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(80) NOT NULL,
     email VARCHAR(60) NOT NULL UNIQUE,
     cnpj CHAR(14) NOT NULL UNIQUE,
-    data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
- );
+    data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
- CREATE TABLE usuario(
+CREATE TABLE funcao (
+    id_funcao INT PRIMARY KEY AUTO_INCREMENT,
+    nome_funcao VARCHAR(45) NOT NULL
+);
+
+CREATE TABLE usuario (
     id_usuario INT PRIMARY KEY AUTO_INCREMENT,
-    nome VARCHAR(60),
+    nome VARCHAR(60) NOT NULL,
     cpf CHAR(11) UNIQUE NOT NULL,
     email VARCHAR(60) UNIQUE NOT NULL,
-    senha VARCHAR(45) NOT NULL,
-    ativo TINYINT NOT NULL, -- 0 Para inativo e 1 para ativo
+    senha VARCHAR(225) NOT NULL,
+    ativo TINYINT NOT NULL DEFAULT 1,
     fk_empresa INT NOT NULL,
-    fk_adm INT,
+    fk_adm INT NULL,
+    fk_funcao INT NOT NULL,
+    
     FOREIGN KEY (fk_empresa) REFERENCES empresa(id_empresa),
-    FOREIGN KEY (fk_adm) REFERENCES usuario(id_usuario)
- );
- 
- CREATE TABLE servidor(
-	id_servidor INT PRIMARY KEY AUTO_INCREMENT,
+    FOREIGN KEY (fk_adm) REFERENCES usuario(id_usuario) ON DELETE SET NULL,
+    FOREIGN KEY (fk_funcao) REFERENCES funcao(id_funcao)
+);
+
+CREATE TABLE permissao (
+    id_permissao INT PRIMARY KEY AUTO_INCREMENT,
+    descricao VARCHAR(225),
+    fk_funcao INT NOT NULL,
+    FOREIGN KEY (fk_funcao) REFERENCES funcao(id_funcao)
+);
+
+CREATE TABLE componente (
+    id_componente INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(60) NOT NULL,
+    especificacao VARCHAR(60) NOT NULL,
+    capacidade VARCHAR(45) NOT NULL
+);
+
+CREATE TABLE formato (
+    id_formato INT PRIMARY KEY AUTO_INCREMENT,
+    unidade_medida VARCHAR(45),
+    tipo_uso VARCHAR (45)
+);
+
+CREATE TABLE servidor (
+    id_servidor INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(60) NOT NULL,
     sistema_operacional VARCHAR(40) NOT NULL,
     fk_empresa INT NOT NULL,
     FOREIGN KEY (fk_empresa) REFERENCES empresa(id_empresa)
- );
- 
- CREATE TABLE componente(
-	id_componente INT PRIMARY KEY AUTO_INCREMENT,
-    nome VARCHAR(60) NOT NULL,
-    especificacao VARCHAR(60) NOT NULL,
-    capacidade VARCHAR(45) NOT NULL,
-    unidade_medida VARCHAR(45) NOT NULL
- );
- 
- CREATE TABLE tipo_componente(
-	id_tipo INT,
-    fk_componente INT,
-    fk_servidor INT,
+    
+);
+
+
+desc servidor;
+
+CREATE TABLE tipo_componente (
+    id_tipo INT PRIMARY KEY AUTO_INCREMENT,
+    fk_componente INT NOT NULL,
+    fk_servidor INT NOT NULL,
+    fk_formato INT NOT NULL,
     nome_componente VARCHAR(45) NOT NULL,
-    valor_max DECIMAL(10,2) NOT NULL,
-    valor_min DECIMAL(10) NOT NULL,
-    PRIMARY KEY (id_tipo, fk_componente, fk_servidor),
+    valor_max_critico DECIMAL(10,2),
+    valor_min_critico DECIMAL(10,2),
+    valor_max_atencao DECIMAL(10,2),
+    valor_min_atencao DECIMAL(10,2),
     FOREIGN KEY (fk_componente) REFERENCES componente(id_componente),
-    FOREIGN KEY (fk_servidor) REFERENCES servidor(id_servidor)
- );
+    FOREIGN KEY (fk_servidor) REFERENCES servidor(id_servidor),
+    FOREIGN KEY (fk_formato) REFERENCES formato(id_formato)
+);
+
+CREATE TABLE nivel_alerta (
+    id_nivel INT PRIMARY KEY AUTO_INCREMENT,
+    critico VARCHAR(45) NOT NULL,
+    alerta VARCHAR(45) NOT NULL,
+    normal VARCHAR(45) NOT NULL,
+    fkEmpresa INT,
+    fkServidor INT,
+    fkTipo_componente INT,
+    FOREIGN KEY (fkEmpresa) 
+        REFERENCES empresa(id_empresa),
+    FOREIGN KEY (fkServidor) 
+        REFERENCES servidor(id_servidor),
+    FOREIGN KEY (fkTipo_componente) 
+        REFERENCES tipo_componente(id_tipo)
+);
+
+
+
+
+CREATE TABLE alerta (
+    id_alerta INT PRIMARY KEY AUTO_INCREMENT,
+    fk_tipo INT NOT NULL,
+    descricao VARCHAR(225) NOT NULL,
+    valor_capturado DECIMAL(5,2),
+    data_alerta DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (fk_tipo)
+    REFERENCES tipo_componente(id_tipo)
+);
+
+
+INSERT INTO empresa (nome, email, cnpj) VALUES 
+('Valfogo Monitoring', 'contato@valfogo.com.br', '12345678000199'),
+('DTIC Solutions', 'suporte@dtic.gov.br', '98765432000188');
+
+
+INSERT INTO funcao (nome_funcao) VALUES 
+('Administrador'), 
+('Analista de TI'), 
+('Visualizador');
+
+
+INSERT INTO formato (unidade_medida) VALUES 
+('%'), ('GHz'), ('GB'), ('MB/s'), ('°C');
+
+
+INSERT INTO componente (nome, especificacao, capacidade) VALUES 
+('Processador', 'Intel Xeon Gold', '3.4'),
+('Memória RAM', 'DDR4', '32'),
+('Disco Rígido', 'SSD NVMe', '1024'),
+('Rede', 'Interface Ethernet', '10');
+
+
+INSERT INTO permissao (descricao, fk_funcao) VALUES 
+('Acesso total ao sistema', 1),
+('Visualizar dashboards e alertas', 2),
+('Apenas visualização de relatórios', 3);
+
+
+INSERT INTO usuario (nome, cpf, email, senha, fk_empresa, fk_adm, fk_funcao) VALUES 
+('José Valfogo', '11122233344', 'jose@valfogo.com', 'hash_senha_123', 1, NULL, 1),
+('Luiz Silva', '55566677788', 'luiz@dtic.gov.br', 'seguranca_2026', 2, NULL, 1);
+
+-- Usuário comum (Gerenciado pelo José Valfogo - ID 1)
+INSERT INTO usuario (nome, cpf, email, senha, fk_empresa, fk_adm, fk_funcao) VALUES 
+('Richard Oliveira', '99988877766', 'richard@valfogo.com', 'user_pass_456', 1, 1, 2);
+
+-- Servidores
+INSERT INTO servidor (nome, sistema_operacional, fk_empresa) VALUES 
+('SRV-Argos-01', 'Ubuntu 22.04 LTS', 1),
+('SRV-Argos-DB', 'Debian 11', 1),
+('SRV-DTIC-PROD', 'Windows Server 2022', 2);
+
+
+INSERT INTO tipo_componente (id_tipo,fk_servidor, fk_formato, fk_componente, nome_componente, valor_max_critico, valor_min_critico,valor_max_atencao,valor_min_atencao) VALUES 
+(1, 1,1,1, 'CPU Principal', 12.00, 0.50,0.25,0.20),  
+(2, 2,2,1, 'Memória RAM', 28.00, 22.00,12.00,10.00),    
+(3, 3,1,2, 'Armazenamento DB', 90.00, 80.00,79.00,60.00), 
+(4, 1,2,2, 'Carga de Trabalho', 87.00, 62.00,61.00,50.00);  
+
+desc tipo_componente;
+
+INSERT INTO alerta (fk_tipo, descricao, valor_capturado) VALUES 
+(1,   'Uso de CPU acima do limite operacional durante o pregão', 3.15),
+(1,   'Memória RAM atingindo nível crítico de paginação', 29.50),
+(1,   'Espaço em disco insuficiente para logs do Home Broker', 950.00);
+
+show tables;
+select*from usuario;
+select*from componente;
+select*from tipo_componente;
+desc tipo_componente;
+desc alerta;
+select*from servidor;
+alter table servidor add column portaSerial VARCHAR(45);
+alter table servidor add column hostServer VARCHAR(45);
+alter table servidor add column endereco VARCHAR(45);
+alter table servidor add column chaveSSH VARCHAR(45);
+alter table servidor add column ambiente VARCHAR(45);
+alter table servidor add column localizacao VARCHAR(45);
+select*from nivel_alerta;
