@@ -1,4 +1,4 @@
-create DATABASE noBroke;
+Create DATABASE noBroke;
 USE noBroke;
 
 CREATE TABLE empresa (
@@ -80,20 +80,6 @@ CREATE TABLE tipo_componente (
     FOREIGN KEY (fk_formato) REFERENCES formato(id_formato)
 );
 
-
-CREATE TABLE nivel_alerta (
-    id_nivel INT PRIMARY KEY AUTO_INCREMENT,
-    critico VARCHAR(45) NOT NULL,
-    alerta VARCHAR(45) NOT NULL,
-    normal VARCHAR(45) NOT NULL,
-    fkEmpresa INT,
-    fkServidor INT,
-    fkTipo_componente INT,
-    FOREIGN KEY (fkEmpresa) REFERENCES empresa(id_empresa),
-    FOREIGN KEY (fkServidor) REFERENCES servidor(id_servidor),
-    FOREIGN KEY (fkTipo_componente) REFERENCES tipo_componente(id_tipo)
-);
-
 CREATE TABLE alerta (
     id_alerta INT PRIMARY KEY AUTO_INCREMENT,
     fk_tipo INT NOT NULL,
@@ -119,7 +105,7 @@ INSERT INTO funcao (nome_funcao) VALUES
 
 
 INSERT INTO formato (unidade_medida) VALUES 
-('%'), ('GHz'), ('GB'), ('MB/s'), ('°C');
+('%'), ('GHz'), ('GB'), ('MB/s');
 
 
 INSERT INTO componente (nome, especificacao, capacidade) VALUES 
@@ -185,7 +171,6 @@ INSERT INTO alerta (fk_tipo, fk_componente, descricao, valor_capturado) VALUES
             JOIN formato ON tipo.fk_formato = formato.id_formato
             WHERE servidor.nome = 'luiz';
 
-
 show tables;
 select*from usuario;
 select*from componente;
@@ -199,4 +184,3 @@ alter table servidor add column endereco VARCHAR(45);
 alter table servidor add column chaveSSH VARCHAR(45);
 alter table servidor add column ambiente VARCHAR(45);
 alter table servidor add column localizacao VARCHAR(45);
-select*from nivel_alerta;
