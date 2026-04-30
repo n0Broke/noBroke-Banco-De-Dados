@@ -30,19 +30,14 @@ CREATE TABLE usuario (
     FOREIGN KEY (fk_funcao) REFERENCES funcao(id_funcao)
 );
 
-CREATE TABLE permissao (
-    id_permissao INT PRIMARY KEY AUTO_INCREMENT,
-    descricao VARCHAR(225),
-    fk_funcao INT NOT NULL,
-    FOREIGN KEY (fk_funcao) REFERENCES funcao(id_funcao)
-);
 
 CREATE TABLE componente (
     id_componente INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(60) NOT NULL,
     especificacao VARCHAR(60) NOT NULL,
-    capacidade VARCHAR(45) NOT NULL
+    capacidade VARCHAR(45) NOT NULL # coluna removida
 );
+alter table componente drop column capacidade;
 
 CREATE TABLE formato (
     id_formato INT PRIMARY KEY AUTO_INCREMENT,
@@ -58,7 +53,21 @@ CREATE TABLE servidor (
     FOREIGN KEY (fk_empresa) REFERENCES empresa(id_empresa)
     
 );
-
+CREATE TABLE grupo_pessoas(
+  id_grupo INT NOT NULL,
+  fk_usuario INT NOT NULL,
+  fk_servidor INT NOT NULL,
+  nome_grupo CHAR(45) NOT NULL,
+  
+  PRIMARY KEY (id_grupo, fk_servidor),
+  
+  CONSTRAINT fk_grupo_pessoas_usuario
+  FOREIGN KEY (fk_usuario)
+    REFERENCES usuario (id_usuario), 
+  
+  CONSTRAINT fk_grupo_pessoas_servidor
+    FOREIGN KEY (fk_servidor)
+    REFERENCES servidor (id_servidor));
 
 desc servidor;
 
@@ -70,8 +79,8 @@ CREATE TABLE tipo_componente (
     nome_componente VARCHAR(45) NOT NULL,
     valor_max_critico DECIMAL(10,2) NOT NULL,
     valor_min_critico DECIMAL(10,2) NOT NULL,
-    valor_max_atencao DECIMAL(10,2) NOT NULL,
-    valor_min_atencao DECIMAL(10,2) NOT NULL,
+    valor_max_atencao DECIMAL(10,2) NOT NULL, #coluna removida
+    valor_min_atencao DECIMAL(10,2) NOT NULL, #coluna removida
     
     PRIMARY KEY (id_tipo, fk_componente, fk_servidor, fk_formato),
     
@@ -79,6 +88,10 @@ CREATE TABLE tipo_componente (
     FOREIGN KEY (fk_servidor) REFERENCES servidor(id_servidor),
     FOREIGN KEY (fk_formato) REFERENCES formato(id_formato)
 );
+alter table tipo_componente add column capacidade VARCHAR(45); #deveria ser not null, mas vou deixar nulo pra facilitar
+alter table tipo_componente drop column valor_max_atencao;
+alter table tipo_componente drop column valor_min_atencao;
+
 
 CREATE TABLE alerta (
     id_alerta INT PRIMARY KEY AUTO_INCREMENT,
@@ -107,12 +120,20 @@ INSERT INTO funcao (nome_funcao) VALUES
 INSERT INTO formato (unidade_medida) VALUES 
 ('%'), ('GHz'), ('GB'), ('MB/s');
 
-
+/*
 INSERT INTO componente (nome, especificacao, capacidade) VALUES 
 ('Processador', 'Intel Xeon Gold', '3.4'),
 ('Memória RAM', 'DDR4', '32'),
 ('Disco Rígido', 'SSD NVMe', '1024'),
 ('Rede', 'Interface Ethernet', '10');
+*/
+
+INSERT INTO componente (nome, especificacao) VALUES 
+('Processador', 'Intel Xeon Gold'),
+('Memória RAM', 'DDR4'),
+('Disco Rígido', 'SSD NVMe'),
+('Rede', 'Interface Ethernet');
+
 
 INSERT INTO permissao (descricao, fk_funcao) VALUES 
 ('Acesso total ao sistema', 1),
@@ -134,12 +155,19 @@ INSERT INTO servidor (nome, sistema_operacional, fk_empresa) VALUES
 
 INSERT INTO servidor (nome, sistema_operacional, fk_empresa) VALUES 
 ('luiz', 'Ubuntu 22.04 LTS', 2);
-
+/*
 INSERT INTO tipo_componente (id_tipo,fk_servidor, fk_formato, fk_componente, nome_componente, valor_max_critico, valor_min_critico,valor_max_atencao,valor_min_atencao) VALUES 
 (1, 1,1,1, 'cpu_percent', 12.00, 0.50,0.25,0.20),  
 (2, 2,2,1, 'ram_percent', 28.00, 22.00,12.00,10.00),    
 (3, 3,1,2, 'disk_percent', 90.00, 80.00,79.00,60.00), 
 (4, 1,2,2, 'total_processos', 87.00, 62.00,61.00,50.00);  
+*/
+
+INSERT INTO tipo_componente (id_tipo,fk_servidor, fk_formato, fk_componente, nome_componente, valor_max_critico, valor_min_critico, capacidade) VALUES 
+(1, 1,1,1, 'cpu_percent', 12.00, 0.50,'3.7 Ghz'),  
+(2, 2,2,1, 'ram_percent', 28.00, 22.00, '16 GB'),    
+(3, 3,1,2, 'disk_percent', 90.00, 80.00, '1 TB'), 
+(4, 1,2,2, 'total_processos', 87.00, 62.00);  
 
 
 INSERT INTO tipo_componente 
@@ -177,10 +205,11 @@ select*from componente;
 select*from tipo_componente;
 desc tipo_componente;
 desc alerta;
-select*from servidor;
+select*from servidor Where fk_empresa = 2;
 alter table servidor add column portaSerial VARCHAR(45);
 alter table servidor add column hostServer VARCHAR(45);
 alter table servidor add column endereco VARCHAR(45);
 alter table servidor add column chaveSSH VARCHAR(45);
 alter table servidor add column ambiente VARCHAR(45);
 alter table servidor add column localizacao VARCHAR(45);
+# drop table permissao;
