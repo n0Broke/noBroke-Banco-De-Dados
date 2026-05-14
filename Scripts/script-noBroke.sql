@@ -199,6 +199,15 @@ INSERT INTO alerta (fk_tipo, fk_componente, descricao, valor_capturado) VALUES
             JOIN formato ON tipo.fk_formato = formato.id_formato
             WHERE servidor.nome = 'luiz';
 
+CREATE VIEW tratamento AS
+SELECT 
+                tipo.nome_componente, 
+                formato.unidade_medida 
+            FROM tipo_componente tipo
+            JOIN servidor ON tipo.fk_servidor = servidor.id_servidor
+            JOIN formato ON tipo.fk_formato = formato.id_formato;
+            
+
 show tables;
 select*from usuario;
 select*from componente;
