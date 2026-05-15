@@ -201,11 +201,18 @@ INSERT INTO alerta (fk_tipo, fk_componente, descricao, valor_capturado) VALUES
 
 CREATE VIEW tratamento AS
 SELECT 
+                servidor.id_servidor,
                 tipo.nome_componente, 
                 formato.unidade_medida 
             FROM tipo_componente tipo
             JOIN servidor ON tipo.fk_servidor = servidor.id_servidor
             JOIN formato ON tipo.fk_formato = formato.id_formato;
+/*
+ select * from tratamento
+            join servidor on tratamento.id_servidor = servidor.id_servidor
+            WHERE servidor.nome = %s;
+PARA CHAMAR NA ETL OS TRATAMENTOS DOS COMPONENTES
+*/
             
 
 show tables;
