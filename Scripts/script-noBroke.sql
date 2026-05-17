@@ -1,4 +1,4 @@
-Create DATABASE noBroke;
+CREATE DATABASE IF NOT EXISTS noBroke;
 USE noBroke;
 
 CREATE TABLE empresa (
@@ -153,6 +153,9 @@ INSERT INTO servidor (nome, sistema_operacional, fk_empresa) VALUES
 ('SRV-Argos-DB', 'Debian 11', 1),
 ('SRV-DTIC-PROD', 'Windows Server 2022', 2);
 
+INSERT INTO servidor (nome, sistema_operacional, fk_empresa) VALUES
+('SRV-Argos-isa-BD', 'Windows Server 2022', 2);
+
 INSERT INTO servidor (nome, sistema_operacional, fk_empresa) VALUES 
 ('luiz', 'Ubuntu 22.04 LTS', 2);
 /*
@@ -221,6 +224,7 @@ select*from componente;
 select*from tipo_componente;
 desc tipo_componente;
 desc alerta;
+select * from servidor;
 select*from servidor Where fk_empresa = 2;
 alter table servidor add column portaSerial VARCHAR(45);
 alter table servidor add column hostServer VARCHAR(45);
