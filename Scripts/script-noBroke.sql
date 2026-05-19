@@ -134,13 +134,6 @@ INSERT INTO componente (nome, especificacao) VALUES
 ('Disco Rígido', 'SSD NVMe'),
 ('Rede', 'Interface Ethernet');
 
-
-INSERT INTO permissao (descricao, fk_funcao) VALUES 
-('Acesso total ao sistema', 1),
-('Visualizar dashboards e alertas', 2),
-('Apenas visualização de relatórios', 3);
-
-
 INSERT INTO usuario (nome, cpf, email, senha, fk_empresa, fk_adm, fk_funcao) VALUES 
 ('José Valfogo', '11122233344', 'jose@valfogo.com', 'hash_senha_123', 1, NULL, 1),
 ('Luiz Silva', '55566677788', 'luiz@dtic.gov.br', 'seguranca_2026', 2, NULL, 1);
@@ -217,7 +210,7 @@ SELECT
 PARA CHAMAR NA ETL OS TRATAMENTOS DOS COMPONENTES
 */
             
-
+use nobroke;
 show tables;
 select*from usuario;
 select*from componente;
@@ -232,4 +225,3 @@ alter table servidor add column endereco VARCHAR(45);
 alter table servidor add column chaveSSH VARCHAR(45);
 alter table servidor add column ambiente VARCHAR(45);
 alter table servidor add column localizacao VARCHAR(45);
-# drop table permissao;
