@@ -97,6 +97,8 @@ CREATE TABLE tipo_componente (
 alter table tipo_componente add column capacidade VARCHAR(45); #deveria ser not null, mas vou deixar nulo pra facilitar
 alter table tipo_componente drop column valor_max_atencao;
 alter table tipo_componente drop column valor_min_atencao;
+ALTER TABLE tipo_componente
+ADD UNIQUE KEY uq_tipo_componente_alerta (id_tipo, fk_componente);
 
 
 CREATE TABLE alerta (
