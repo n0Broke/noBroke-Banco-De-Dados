@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS noBroke;
+Create DATABASE noBroke;
 USE noBroke;
 
 CREATE TABLE empresa (
@@ -47,18 +47,17 @@ CREATE TABLE formato (
 
 CREATE TABLE servidor (
     id_servidor INT PRIMARY KEY AUTO_INCREMENT,
-    nome VARCHAR(60) NOT NULL,
+    nome VARCHAR(60) NOT NULL UNIQUE,
     sistema_operacional VARCHAR(40) NOT NULL,
     fk_empresa INT NOT NULL,
-    FOREIGN KEY (fk_empresa) REFERENCES empresa(id_empresa)
+    FOREIGN KEY (fk_empresa) REFERENCES empresa(id_empresa),
+    portaSerial VARCHAR(45),
+    hostServer VARCHAR(45),
+	endereco VARCHAR(45),
+	chaveSSH VARCHAR(45),
+	ambiente VARCHAR(45),
+	localizacao VARCHAR(45)
 );
-alter table servidor add column portaSerial VARCHAR(45);
-alter table servidor add column hostServer VARCHAR(45);
-alter table servidor add column endereco VARCHAR(45);
-alter table servidor add column chaveSSH VARCHAR(45);
-alter table servidor add column ambiente VARCHAR(45);
-alter table servidor add column localizacao VARCHAR(45);
-
 CREATE TABLE grupo_pessoas(
   id_grupo INT NOT NULL,
   fk_usuario INT NOT NULL,
@@ -97,8 +96,6 @@ CREATE TABLE tipo_componente (
 alter table tipo_componente add column capacidade VARCHAR(45); #deveria ser not null, mas vou deixar nulo pra facilitar
 alter table tipo_componente drop column valor_max_atencao;
 alter table tipo_componente drop column valor_min_atencao;
-ALTER TABLE tipo_componente
-ADD UNIQUE KEY uq_tipo_componente_alerta (id_tipo, fk_componente);
 
 
 CREATE TABLE alerta (
@@ -142,6 +139,13 @@ INSERT INTO componente (nome, especificacao) VALUES
 ('Disco Rígido', 'SSD NVMe'),
 ('Rede', 'Interface Ethernet');
 
+
+INSERT INTO permissao (descricao, fk_funcao) VALUES 
+('Acesso total ao sistema', 1),
+('Visualizar dashboards e alertas', 2),
+('Apenas visualização de relatórios', 3);
+
+
 INSERT INTO usuario (nome, cpf, email, senha, fk_empresa, fk_adm, fk_funcao) VALUES 
 ('José Valfogo', '11122233344', 'jose@valfogo.com', 'hash_senha_123', 1, NULL, 1),
 ('Luiz Silva', '55566677788', 'luiz@dtic.gov.br', 'seguranca_2026', 2, NULL, 1);
@@ -153,9 +157,6 @@ INSERT INTO servidor (nome, sistema_operacional, fk_empresa) VALUES
 ('SRV-Argos-01', 'Ubuntu 22.04 LTS', 1),
 ('SRV-Argos-DB', 'Debian 11', 1),
 ('SRV-DTIC-PROD', 'Windows Server 2022', 2);
-
-INSERT INTO servidor (nome, sistema_operacional, fk_empresa) VALUES
-('SRV-Argos-isa-BD', 'Windows Server 2022', 2);
 
 INSERT INTO servidor (nome, sistema_operacional, fk_empresa) VALUES 
 ('luiz', 'Ubuntu 22.04 LTS', 2);
@@ -171,17 +172,17 @@ INSERT INTO tipo_componente (id_tipo,fk_servidor, fk_formato, fk_componente, nom
 (1, 1,1,1, 'cpu_percent', 12.00, 0.50,'3.7 Ghz'),  
 (2, 2,2,1, 'ram_percent', 28.00, 22.00, '16 GB'),    
 (3, 3,1,2, 'disk_percent', 90.00, 80.00, '1 TB'), 
-(4, 1,2,2, 'total_processos', 87.00, 62.00, null);  
+(4, 1,2,2, 'total_processos', 87.00, 62.00);  
 
 
 INSERT INTO tipo_componente 
-(fk_componente, fk_servidor, fk_formato, nome_componente, valor_max_critico, valor_min_critico) VALUES
-(1, 4, 1, 'cpu_percent', 90.00, 0.00),
-(1, 4, 2, 'cpu_freq_current', 4.00, 0.80),
-(2, 4, 1, 'ram_percent', 95.00, 0.00),
-(2, 4, 3, 'ram_used_gb', 14.00, 0.00),
-(3, 4, 1, 'disk_percent', 90.00, 0.00),
-(4, 4, 4, 'latencia_resposta_ms', 500.00, 0.00);
+(fk_componente, fk_servidor, fk_formato, nome_componente, valor_max_critico, valor_min_critico, valor_max_atencao, valor_min_atencao) VALUES
+(1, 4, 1, 'cpu_percent', 90.00, 0.00, 75.00, 0.00),
+(1, 4, 2, 'cpu_freq_current', 4.00, 0.80, 3.50, 1.00),
+(2, 4, 1, 'ram_percent', 95.00, 0.00, 85.00, 0.00),
+(2, 4, 3, 'ram_used_gb', 14.00, 0.00, 12.00, 0.00),
+(3, 4, 1, 'disk_percent', 90.00, 0.00, 80.00, 0.00),
+(4, 4, 4, 'latencia_resposta_ms', 500.00, 0.00, 200.00, 0.00);
 
 desc tipo_componente;
 
@@ -201,28 +202,36 @@ INSERT INTO alerta (fk_tipo, fk_componente, descricao, valor_capturado) VALUES
             FROM tipo_componente tipo
             JOIN servidor ON tipo.fk_servidor = servidor.id_servidor
             JOIN formato ON tipo.fk_formato = formato.id_formato
-            WHERE servidor.nome = 'SRV-Argos-isa-BD';
+            WHERE servidor.nome = 'luiz';
 
 CREATE VIEW tratamento AS
 SELECT 
-                servidor.id_servidor,
                 tipo.nome_componente, 
                 formato.unidade_medida 
             FROM tipo_componente tipo
             JOIN servidor ON tipo.fk_servidor = servidor.id_servidor
             JOIN formato ON tipo.fk_formato = formato.id_formato;
-/*
- select * from tratamento
-            join servidor on tratamento.id_servidor = servidor.id_servidor
-            WHERE servidor.nome = %s;
-PARA CHAMAR NA ETL OS TRATAMENTOS DOS COMPONENTES
-*/
             
+            
+# ==========================================
+# CÓDIGOS PARA TESTE
+# USE noBroke;
 show tables;
 select*from usuario;
+select*from servidor;
 select*from componente;
 select*from tipo_componente;
-desc tipo_componente;
-desc alerta;
-select * from servidor;
+select*from alerta;
+select*from empresa;
+select*from formato;
+select*from funcao;
+select*from permissao;
+
+# desc tipo_componente;
+# desc alerta;
+
+# ============================================================
+# SELECTS
+
 select*from servidor Where fk_empresa = 2;
+# drop table permissao;
