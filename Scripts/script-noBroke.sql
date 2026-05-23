@@ -1,5 +1,5 @@
-# DROP DATABASE noBroke;
-CREATE DATABASE noBroke;
+#DROP DATABASE noBroke;
+#CREATE DATABASE noBroke;
 USE noBroke;
 
 CREATE TABLE empresa (
@@ -173,7 +173,6 @@ select*from alerta;
 select*from empresa;
 select*from formato;
 select*from funcao;
-select*from permissao;
 
 # desc tipo_componente;
 # desc alerta;
@@ -190,4 +189,3 @@ select*from permissao;
             WHERE servidor.nome = 'luiz';
 
 select*from servidor Where fk_empresa = 2;
-# drop table permissao;
