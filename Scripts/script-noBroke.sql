@@ -73,6 +73,20 @@ CREATE TABLE tipo_componente (
     capacidade VARCHAR(45)
 );
 
+INSERT INTO tipo_componente
+(fk_servidor, fk_formato, fk_componente, nome_componente, valor_max_critico, valor_min_critico, capacidade)
+VALUES
+(3, 1, 4, 'volume_requisicoes_http', 800.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 4, 4, 'latencia_p95_ordens', 800.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'ordens_com_sucesso', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'respostas_http_5xx', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'erro_500', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'erro_501', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'erro_502', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'erro_503', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'erro_504', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'erro_505', 100.00, 0.00, 'Dashboard HTTP - Requisições');
+
 CREATE TABLE alerta (
     id_alerta INT PRIMARY KEY AUTO_INCREMENT,
     fk_tipo INT NOT NULL,
@@ -154,7 +168,7 @@ SELECT
             
 # ==========================================
 # CÓDIGOS PARA TESTE
-# USE noBroke;
+USE noBroke;
 show tables;
 select*from usuario;
 select*from servidor;
@@ -180,3 +194,21 @@ select*from funcao;
             WHERE servidor.nome = 'luiz';
 
 select*from servidor Where fk_empresa = 2;
+<<<<<<< HEAD
+# drop table permissao;
+SELECT
+		servidor.nome AS nome_servidor,
+        tipo_componente.nome_componente,
+        tipo_componente.fk_componente,
+        tipo_componente.valor_max_critico,
+        tipo_componente.valor_min_critico
+        FROM tipo_componente
+        JOIN servidor
+        ON tipo_componente.fk_servidor = servidor.id_servidor
+		WHERE nome_componente LIKE '%HTTP%' 
+		OR nome_componente LIKE '%ordens%'
+		OR nome_componente LIKE  '%rro%'
+        OR nome_componente LIKE '%requisições%'
+		AND fk_servidor = 3;
+=======
+>>>>>>> b198f73109317220b1c20bfae9b22fe467c1520d
