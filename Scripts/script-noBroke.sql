@@ -57,15 +57,6 @@ CREATE TABLE servidor (
 	ambiente VARCHAR(45),
 	localizacao VARCHAR(45)
 );
-CREATE TABLE grupo_pessoas(
-  id_grupo INT NOT NULL,
-  fk_usuario INT NOT NULL,
-  fk_servidor INT NOT NULL,
-  nome_grupo CHAR(45) NOT NULL,
-  PRIMARY KEY (id_grupo, fk_servidor),
-  CONSTRAINT fk_grupo_pessoas_usuario FOREIGN KEY (fk_usuario) REFERENCES usuario (id_usuario), 
-  CONSTRAINT fk_grupo_pessoas_servidor FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor)
-);
 
 CREATE TABLE tipo_componente (
     id_tipo INT AUTO_INCREMENT,
