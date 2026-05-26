@@ -1,5 +1,4 @@
-#DROP DATABASE noBroke;
-#CREATE DATABASE noBroke;
+CREATE DATABASE IF NOT EXISTS noBroke;
 USE noBroke;
 
 CREATE TABLE empresa (
@@ -35,8 +34,10 @@ CREATE TABLE usuario (
 CREATE TABLE componente (
     id_componente INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(60) NOT NULL,
-    especificacao VARCHAR(60) NOT NULL
+    especificacao VARCHAR(60) NOT NULL,
+    capacidade VARCHAR(45) NOT NULL # coluna removida
 );
+alter table componente drop column capacidade;
 
 CREATE TABLE formato (
     id_formato INT PRIMARY KEY AUTO_INCREMENT,
@@ -46,46 +47,57 @@ CREATE TABLE formato (
 
 CREATE TABLE servidor (
     id_servidor INT PRIMARY KEY AUTO_INCREMENT,
-    nome VARCHAR(60) NOT NULL UNIQUE,
+    nome VARCHAR(60) NOT NULL,
     sistema_operacional VARCHAR(40) NOT NULL,
     fk_empresa INT NOT NULL,
-    FOREIGN KEY (fk_empresa) REFERENCES empresa(id_empresa),
-    portaSerial VARCHAR(45),
-    hostServer VARCHAR(45),
-	endereco VARCHAR(45),
-	chaveSSH VARCHAR(45),
-	ambiente VARCHAR(45),
-	localizacao VARCHAR(45)
+    FOREIGN KEY (fk_empresa) REFERENCES empresa(id_empresa)
 );
+alter table servidor add column portaSerial VARCHAR(45);
+alter table servidor add column hostServer VARCHAR(45);
+alter table servidor add column endereco VARCHAR(45);
+alter table servidor add column chaveSSH VARCHAR(45);
+alter table servidor add column ambiente VARCHAR(45);
+alter table servidor add column localizacao VARCHAR(45);
+
+CREATE TABLE grupo_pessoas(
+  id_grupo INT NOT NULL,
+  fk_usuario INT NOT NULL,
+  fk_servidor INT NOT NULL,
+  nome_grupo CHAR(45) NOT NULL,
+  
+  PRIMARY KEY (id_grupo, fk_servidor),
+  
+  CONSTRAINT fk_grupo_pessoas_usuario
+  FOREIGN KEY (fk_usuario)
+    REFERENCES usuario (id_usuario), 
+  
+  CONSTRAINT fk_grupo_pessoas_servidor
+    FOREIGN KEY (fk_servidor)
+    REFERENCES servidor (id_servidor));
+
+Drop table grupo_pessoas;
 
 CREATE TABLE tipo_componente (
     id_tipo INT AUTO_INCREMENT,
+    fk_componente INT NOT NULL,
     fk_servidor INT NOT NULL,
     fk_formato INT NOT NULL,
-    fk_componente INT NOT NULL,
     nome_componente VARCHAR(45) NOT NULL,
     valor_max_critico DECIMAL(10,2) NOT NULL,
     valor_min_critico DECIMAL(10,2) NOT NULL,
+    valor_max_atencao DECIMAL(10,2) NOT NULL, #coluna removida
+    valor_min_atencao DECIMAL(10,2) NOT NULL, #coluna removida
+    
     PRIMARY KEY (id_tipo, fk_componente, fk_servidor, fk_formato),
+    
     FOREIGN KEY (fk_componente) REFERENCES componente(id_componente),
     FOREIGN KEY (fk_servidor) REFERENCES servidor(id_servidor),
-    FOREIGN KEY (fk_formato) REFERENCES formato(id_formato),
-    capacidade VARCHAR(45)
+    FOREIGN KEY (fk_formato) REFERENCES formato(id_formato)
 );
+alter table tipo_componente add column capacidade VARCHAR(45); #deveria ser not null, mas vou deixar nulo pra facilitar
+alter table tipo_componente drop column valor_max_atencao;
+alter table tipo_componente drop column valor_min_atencao;
 
-INSERT INTO tipo_componente
-(fk_servidor, fk_formato, fk_componente, nome_componente, valor_max_critico, valor_min_critico, capacidade)
-VALUES
-(3, 1, 4, 'volume_requisicoes_http', 800.00, 0.00, 'Dashboard HTTP - Requisições'),
-(3, 4, 4, 'latencia_p95_ordens', 800.00, 0.00, 'Dashboard HTTP - Requisições'),
-(3, 1, 4, 'ordens_com_sucesso', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
-(3, 1, 4, 'respostas_http_5xx', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
-(3, 1, 4, 'erro_500', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
-(3, 1, 4, 'erro_501', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
-(3, 1, 4, 'erro_502', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
-(3, 1, 4, 'erro_503', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
-(3, 1, 4, 'erro_504', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
-(3, 1, 4, 'erro_505', 100.00, 0.00, 'Dashboard HTTP - Requisições');
 
 CREATE TABLE alerta (
     id_alerta INT PRIMARY KEY AUTO_INCREMENT,
@@ -94,7 +106,9 @@ CREATE TABLE alerta (
     descricao VARCHAR(225) NOT NULL,
     valor_capturado DECIMAL(5,2),
     data_alerta DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    FOREIGN KEY (fk_tipo, fk_componente) REFERENCES tipo_componente(id_tipo, fk_componente)
+    
+    FOREIGN KEY (fk_tipo, fk_componente) 
+        REFERENCES tipo_componente(id_tipo, fk_componente)
 );
 
 
@@ -157,6 +171,20 @@ INSERT INTO alerta (fk_tipo, fk_componente, descricao, valor_capturado) VALUES
 (3, 2, 'Uso de RAM atingiu nível crítico no servidor luiz', 96.20),
 (2, 1, 'Pico de processamento detectado', 85.00);
 
+INSERT INTO tipo_componente
+(fk_servidor, fk_formato, fk_componente, nome_componente, valor_max_critico, valor_min_critico, capacidade)
+VALUES
+(3, 1, 4, 'volume_requisicoes_http', 800.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 4, 4, 'latencia_p95_ordens', 800.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'ordens_com_sucesso', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'respostas_http_5xx', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'erro_500', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'erro_501', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'erro_502', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'erro_503', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'erro_504', 100.00, 0.00, 'Dashboard HTTP - Requisições'),
+(3, 1, 4, 'erro_505', 100.00, 0.00, 'Dashboard HTTP - Requisições');
+
 CREATE VIEW tratamento AS
 SELECT 
                 tipo.nome_componente, 
@@ -179,13 +207,7 @@ select*from empresa;
 select*from formato;
 select*from funcao;
 
-# desc tipo_componente;
-# desc alerta;
-
-# ============================================================
-# SELECTS
-
- SELECT 
+SELECT 
 	tipo.nome_componente, 
     formato.unidade_medida 
             FROM tipo_componente tipo
@@ -194,7 +216,7 @@ select*from funcao;
             WHERE servidor.nome = 'luiz';
 
 select*from servidor Where fk_empresa = 2;
-<<<<<<< HEAD
+
 # drop table permissao;
 SELECT
 		servidor.nome AS nome_servidor,
@@ -210,5 +232,3 @@ SELECT
 		OR nome_componente LIKE  '%rro%'
         OR nome_componente LIKE '%requisições%'
 		AND fk_servidor = 3;
-=======
->>>>>>> b198f73109317220b1c20bfae9b22fe467c1520d
